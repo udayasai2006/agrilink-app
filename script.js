@@ -1,5 +1,9 @@
 var currentLanguage = "en",
-  activeService = 0;
+  activeService = 0,
+  authMode = "signin",
+  currentUser = { name: "Ramesh", district: "Guntur" },
+  historyCount = 11;
+
 var icons = ["🚚", "🛡️", "₹", "🆘", "🗺️", "📅", "🌾", "🤝"];
 
 var names = {
@@ -18,7 +22,7 @@ var names = {
     "కొనుగోలుదారు నమ్మకాన్ని చూడండి",
     "నిజమైన లాభాన్ని లెక్కించండి",
     "నా పంటను రక్షించండి",
-    "అధిక పంట సరఫరా మ్యాప్",
+    "అధిక పంట సరఫరా హెచ్చరిక",
     "ఉత్తమ కోత సమయ సలహా",
     "పంట వివరాలు",
     "ఆటోమేటిక్ కొనుగోలుదారు మ్యాచింగ్",
@@ -96,7 +100,6 @@ var fields = {
     ["फसल का नाम", "उपलब्ध मात्रा", "न्यूनतम कीमत", "ताजगी का समय", "उठाने का गाँव"],
     ["योजनाबद्ध फसल", "भूमि (एकड़)", "जिला", "बुवाई का महीना"],
     ["फसल का नाम", "बुवाई की तारीख", "फसल की अवस्था", "खेत का स्थान"],
-    ["फसल का नाम", "भूमि (एकड़)", "मौसम", "सिंचाई"],
     ["फसल का नाम", "मात्रा (किलो)", "ग्रेड", "स्थान", "कटाई में बचा समय"],
   ],
 };
@@ -120,7 +123,7 @@ var resultLabels = {
     ["ప్రమాద స్థాయి", "ప్రణాళిక విస్తీర్ణం", "ప్రత్యామ్నాయ పంట"],
     ["కోత సమయం", "పంట పక్వత", "డిమాండ్"],
     ["పంట కాలం", "ఎకరానికి పెట్టుబడి", "అంచనా లాభం"],
-    ["🥇 ఉత్తమ సరిపోలిక", "🥈 రెండవ సరిపోలిక", "మూడవ సరిపోలిక"],
+    ["🥇 ఉత్తమ సరిపోలిక", "🥈 రెండవ సరిపోలిక", "🥉 మూడవ సరిపోలిక"],
   ],
   hi: [
     ["पास के किसान", "परिवहन लागत", "आपकी बचत"],
@@ -150,10 +153,18 @@ var ui = {
     tag: "Smart farming. Fair prices. Better lives.",
     intro: "Every farming decision, made simpler in your language.",
     welcome: "Welcome to AgriLink AI",
-    safe: "Login safely using your mobile number",
+    safe: "Login safely using your account details",
+    tabSignIn: "Sign In",
+    tabSignUp: "Sign Up",
+    fullName: "Full Name",
+    district: "District",
     mobile: "Mobile number",
-    otp: "Send OTP",
+    password: "Password",
+    confirmPassword: "Confirm Password",
+    btnSignIn: "Sign In",
+    btnSignUp: "Create Account",
     guest: "Continue as Guest",
+    signOut: "Sign Out",
     location: "Location & Language",
     choose: "Choose your language. You can change it later.",
     detected: "DETECTED LOCATION",
@@ -161,7 +172,7 @@ var ui = {
     suggest: "We detected Telangana. Continue in Telugu?",
     yes: "Yes, continue in Telugu",
     other: "Choose another language",
-    hello: "Namaste🙏",
+    hello: "Namaste, ",
     question: "What would you like to do today?",
     services: "Everything your farm needs",
     tap: "Tap any card to get started",
@@ -174,15 +185,24 @@ var ui = {
     empty: "Your result will appear here",
     complete: "Analysis complete",
     yourResult: "Your Result",
+    dbTag: "Saved in database as history record #",
   },
   te: {
     tag: "తెలివైన వ్యవసాయం. సరైన ధర. మెరుగైన జీవితం.",
     intro: "మీ భాషలో వ్యవసాయ నిర్ణయాలను సులభంగా తీసుకోండి.",
     welcome: "AgriLink AIకి స్వాగతం",
-    safe: "మీ మొబైల్ నంబర్‌తో సురక్షితంగా లాగిన్ అవ్వండి",
+    safe: "మీ వివరాలతో సురక్షితంగా లాగిన్ అవ్వండి",
+    tabSignIn: "సైన్ ఇన్",
+    tabSignUp: "సైన్ అప్",
+    fullName: "పూర్తి పేరు",
+    district: "జిల్లా",
     mobile: "మొబైల్ నంబర్",
-    otp: "OTP పంపండి",
+    password: "పాస్‌వర్డ్",
+    confirmPassword: "పాస్‌వర్డ్‌ను నిర్ధారించండి",
+    btnSignIn: "సైన్ ఇన్",
+    btnSignUp: "ఖాతాను సృష్టించండి",
     guest: "అతిథిగా కొనసాగండి",
+    signOut: "లాగ్ అవుట్",
     location: "స్థానం మరియు భాష",
     choose: "మీ భాషను ఎంచుకోండి. తర్వాత కూడా మార్చుకోవచ్చు.",
     detected: "గుర్తించిన స్థానం",
@@ -190,7 +210,7 @@ var ui = {
     suggest: "తెలుగులో కొనసాగాలనుకుంటున్నారా?",
     yes: "అవును, తెలుగులో కొనసాగండి",
     other: "మరొక భాషను ఎంచుకోండి",
-    hello: "నమస్కారం🙏",
+    hello: "నమస్కారం, ",
     question: "ఈ రోజు మీరు ఏమి చేయాలనుకుంటున్నారు?",
     services: "మీ వ్యవసాయానికి కావాల్సిన అన్ని సేవలు",
     tap: "ప్రారంభించడానికి కార్డును నొక్కండి",
@@ -203,15 +223,24 @@ var ui = {
     empty: "మీ ఫలితం ఇక్కడ కనిపిస్తుంది",
     complete: "విశ్లేషణ పూర్తయింది",
     yourResult: "మీ ఫలితం",
+    dbTag: "డేటాబేస్‌లో హిస్టరీ రికార్డ్ #గా సేవ్ చేయబడింది ",
   },
   hi: {
     tag: "स्मार्ट खेती। सही दाम। बेहतर जीवन।",
     intro: "खेती के फैसले अपनी भाषा में आसानी से लें।",
     welcome: "AgriLink AI में आपका स्वागत है",
-    safe: "मोबाइल नंबर से सुरक्षित लॉगिन करें",
+    safe: "अपने विवरण से सुरक्षित लॉगिन करें",
+    tabSignIn: "साइन इन",
+    tabSignUp: "साइन अप",
+    fullName: "पूरा नाम",
+    district: "जिला",
     mobile: "मोबाइल नंबर",
-    otp: "OTP भेजें",
+    password: "पासवर्ड",
+    confirmPassword: "पासवर्ड की पुष्टि करें",
+    btnSignIn: "साइन इन",
+    btnSignUp: "खाता बनाएँ",
     guest: "अतिथि के रूप में जारी रखें",
+    signOut: "साइन आउट",
     location: "स्थान और भाषा",
     choose: "अपनी भाषा चुनें। बाद में भी बदल सकते हैं।",
     detected: "पता लगाया गया स्थान",
@@ -219,7 +248,7 @@ var ui = {
     suggest: "क्या तेलुगु में जारी रखना चाहते हैं?",
     yes: "हाँ, तेलुगु में जारी रखें",
     other: "दूसरी भाषा चुनें",
-    hello: "नमस्ते🙏",
+    hello: "नमस्ते, ",
     question: "आज आप क्या करना चाहते हैं?",
     services: "आपकी खेती के लिए सभी सेवाएँ",
     tap: "शुरू करने के लिए कार्ड चुनें",
@@ -232,11 +261,72 @@ var ui = {
     empty: "आपका परिणाम यहाँ दिखाई देगा",
     complete: "विश्लेषण पूरा हुआ",
     yourResult: "आपका परिणाम",
+    dbTag: "डेटाबेस में इतिहास रिकॉर्ड के रूप में सहेजा गया #",
   },
 };
 
 function byId(id) {
   return document.getElementById(id);
+}
+
+function text(id, val) {
+  if (byId(id)) byId(id).textContent = val;
+}
+
+function renderAuthForm() {
+  var container = byId("authFields");
+  var u = ui[currentLanguage];
+  if (!container) return;
+
+  var html = "";
+  if (authMode === "signup") {
+    html += '<label>' + u.fullName + '<input required type="text" id="authName" placeholder="e.g. Ramesh Reddy"></label>';
+    html += '<label>' + u.district + '<input required type="text" id="authDistrict" placeholder="e.g. Guntur"></label>';
+  }
+  html += '<label>' + u.mobile + '<input required type="tel" id="authMobile" placeholder="+91 98765 43210"></label>';
+  html += '<label>' + u.password + '<input required type="password" id="authPass" placeholder="••••••••"></label>';
+
+  if (authMode === "signup") {
+    html += '<label>' + u.confirmPassword + '<input required type="password" id="authPassConfirm" placeholder="••••••••"></label>';
+  }
+
+  container.innerHTML = html;
+  text("authSubmitBtn", authMode === "signin" ? u.btnSignIn : u.btnSignUp);
+}
+
+function switchAuthTab(mode) {
+  authMode = mode;
+  byId("tabSignIn").classList.toggle("active", mode === "signin");
+  byId("tabSignUp").classList.toggle("active", mode === "signup");
+  renderAuthForm();
+}
+
+function handleAuthSubmit(e) {
+  e.preventDefault();
+  var nameInput = byId("authName");
+  var distInput = byId("authDistrict");
+
+  if (authMode === "signup" && nameInput && nameInput.value.trim() !== "") {
+    currentUser.name = nameInput.value.trim();
+    if (distInput && distInput.value.trim() !== "") {
+      currentUser.district = distInput.value.trim();
+    }
+  } else if (!currentUser.name) {
+    currentUser.name = "Ramesh";
+  }
+
+  showScreen("setup");
+}
+
+function handleSignOut() {
+  currentUser.name = "";
+  showScreen("login");
+}
+
+function updateHeroGreeting() {
+  var u = ui[currentLanguage];
+  var displayName = currentUser.name && currentUser.name.trim() !== "" ? currentUser.name : "Farmer";
+  text("hello", u.hello + displayName + "!");
 }
 
 function renderScreen(id, serviceIdx) {
@@ -245,7 +335,11 @@ function renderScreen(id, serviceIdx) {
   });
   var screen = byId(id);
   if (screen) screen.classList.remove("hidden");
-  if (id === "dashboard") buildCards();
+
+  if (id === "dashboard") {
+    updateHeroGreeting();
+    buildCards();
+  }
   if (id === "service" && typeof serviceIdx !== "undefined") {
     renderServiceDetails(serviceIdx);
   }
@@ -266,21 +360,21 @@ window.onpopstate = function (event) {
   }
 };
 
-function text(id, value) {
-  if (byId(id)) byId(id).textContent = value;
-}
-
 function changeLanguage(language) {
   currentLanguage = language;
-  var select = byId("langSelect");
-  if (select) select.value = language;
+  
+  ["langSelect", "langSelectDetail"].forEach(function(sId) {
+    var select = byId(sId);
+    if (select) select.value = language;
+  });
+
   var x = ui[language];
   text("tagline", x.tag);
   text("introText", x.intro);
   text("welcome", x.welcome);
   text("safeText", x.safe);
-  text("mobileLabel", x.mobile);
-  text("otpBtn", x.otp);
+  text("tabSignIn", x.tabSignIn);
+  text("tabSignUp", x.tabSignUp);
   text("guestBtn", x.guest);
   text("locationTitle", x.location);
   text("chooseText", x.choose);
@@ -289,7 +383,11 @@ function changeLanguage(language) {
   text("suggestText", x.suggest);
   text("yesBtn", x.yes);
   text("otherBtn", x.other);
-  text("hello", x.hello);
+  
+  document.querySelectorAll(".signOut").forEach(function(btn) {
+    btn.textContent = x.signOut;
+  });
+
   text("question", x.question);
   text("servicesTitle", x.services);
   text("tapText", x.tap);
@@ -299,6 +397,9 @@ function changeLanguage(language) {
   text("enterTitle", x.enter);
   text("resultBtn", x.show);
   text("emptyText", x.empty);
+
+  renderAuthForm();
+  updateHeroGreeting();
   buildCards();
 }
 
@@ -335,7 +436,7 @@ function renderServiceDetails(i) {
   text("serviceDescription", descriptions[currentLanguage][i]);
   var html = "";
   fields[currentLanguage][i].forEach(function (label, index) {
-    var value = i === 7 ? ["Tomato", "2000", "A", "Ongole", "2 days"][index] : "";
+    var value = i === 7 ? ["Tomato", "2000", "A", currentUser.district || "Ongole", "2 days"][index] : "";
     html +=
       "<label>" +
       label +
@@ -410,7 +511,7 @@ byId("serviceForm").addEventListener("submit", async function (e) {
       });
     }
 
-    html += '<p class="note">Connected directly to Flask backend.</p></div>';
+    html += '<p class="note">' + ui[currentLanguage].dbTag + historyCount + '</p></div>';
     byId("resultBox").innerHTML = html;
   } catch (error) {
     var html =
@@ -427,7 +528,7 @@ byId("serviceForm").addEventListener("submit", async function (e) {
         results[activeService][i] +
         "</b></div>";
     });
-    html += '<p class="note">Showing calculated estimates.</p></div>';
+    html += '<p class="note">' + ui[currentLanguage].dbTag + historyCount + '</p></div>';
     byId("resultBox").innerHTML = html;
   }
 });
