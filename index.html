@@ -7,30 +7,36 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <!-- LOGIN SCREEN -->
+    <!-- LOGIN / REGISTER SCREEN -->
     <main id="login" class="screen login">
-      <div class="brand">
-        🌱 <b>AgriLink <i>AI</i></b>
-      </div>
+      <div class="brand">🌱 <b>AgriLink <i>AI</i></b></div>
       <section class="intro">
-        <small>FOR EVERY FARMER</small>
+        <small id="introSmall">FOR EVERY FARMER</small>
         <h1 id="tagline">Smart farming. Fair prices. Better lives.</h1>
-        <p id="introText">
-          Every farming decision, made simpler in your language.
-        </p>
+        <p id="introText">Every farming decision, made simpler in your language.</p>
         <div class="crops">🌾 🌽 🍅 🌶️ 🥬</div>
       </section>
+      
       <section class="panel">
+        <div class="auth-tabs">
+          <button id="tabSignIn" class="tab-btn active" onclick="switchAuthTab('signin')">Sign In</button>
+          <button id="tabSignUp" class="tab-btn" onclick="switchAuthTab('signup')">Sign Up</button>
+        </div>
+
         <h2 id="welcome">Welcome to AgriLink AI</h2>
-        <p id="safeText">Login safely using your mobile number</p>
-        <label id="mobileLabel">Mobile number</label>
-        <input placeholder="+91 98765 43210" />
-        <button id="otpBtn" class="primary" onclick="showScreen('setup')">
-          Send OTP
-        </button>
-        <button id="guestBtn" class="link" onclick="showScreen('setup')">
-          Continue as Guest
-        </button>
+        <p id="safeText">Login safely using your account details</p>
+
+        <form id="authForm" onsubmit="handleAuthSubmit(event)">
+          <!-- Dynamic Input Container -->
+          <div id="authFields">
+            <!-- Rendered by script.js -->
+          </div>
+
+          <button type="submit" id="authSubmitBtn" class="primary">Sign In</button>
+        </form>
+
+        <button id="guestBtn" class="link" onclick="showScreen('setup')">Continue as Guest</button>
+
         <div class="languages">
           <button onclick="changeLanguage('en')">English</button>
           <button onclick="changeLanguage('te')">తెలుగు</button>
@@ -78,17 +84,18 @@
     <main id="dashboard" class="screen hidden">
       <header>
         <div style="display: flex; align-items: center; gap: 15px;">
-          <button class="back" onclick="showScreen('setup')">← Back</button>
-          <div class="brand">
-            🌱 <b>AgriLink <i>AI</i></b>
-          </div>
+          <div class="brand">🌱 <b>AgriLink <i>AI</i></b></div>
         </div>
-        <select id="langSelect" onchange="changeLanguage(this.value)">
-          <option value="en">English</option>
-          <option value="te">తెలుగు</option>
-          <option value="hi">హిందీ</option>
-        </select>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <select id="langSelect" onchange="changeLanguage(this.value)">
+            <option value="en">English</option>
+            <option value="te">తెలుగు</option>
+            <option value="hi">హిందీ</option>
+          </select>
+          <button id="signOutBtn" class="signOut" onclick="handleSignOut()">Sign Out</button>
+        </div>
       </header>
+
       <section class="hero">
         <div>
           <small>☀️ 29°C</small>
@@ -97,6 +104,7 @@
         </div>
         <span>🌾🚜</span>
       </section>
+
       <section class="content">
         <h2 id="servicesTitle">Everything your farm needs</h2>
         <p id="tapText">Tap any card to get started</p>
@@ -118,11 +126,18 @@
       <header>
         <div style="display: flex; align-items: center; gap: 15px;">
           <button class="back" onclick="showScreen('dashboard')">← Back</button>
-          <div class="brand">
-            🌱 <b>AgriLink <i>AI</i></b>
-          </div>
+          <div class="brand">🌱 <b>AgriLink <i>AI</i></b></div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <select id="langSelectDetail" onchange="changeLanguage(this.value)">
+            <option value="en">English</option>
+            <option value="te">తెలుగు</option>
+            <option value="hi">హిందీ</option>
+          </select>
+          <button class="signOut" onclick="handleSignOut()">Sign Out</button>
         </div>
       </header>
+
       <section class="content">
         <button id="backBtn" class="back" onclick="showScreen('dashboard')">
           ← Back to services
@@ -134,12 +149,14 @@
             <p id="serviceDescription"></p>
           </div>
         </div>
+
         <div class="workspace">
           <form id="serviceForm">
             <h2 id="enterTitle">Enter your details</h2>
             <div id="formFields"></div>
             <button id="resultBtn" class="primary">Show Result</button>
           </form>
+
           <section id="resultBox" class="result">
             <div class="empty">
               🌱
