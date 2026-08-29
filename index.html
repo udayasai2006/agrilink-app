@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>AgriLink AI</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- LOGIN SCREEN -->
+    <main id="login" class="screen login">
+      <div class="brand">
+        🌱 <b>AgriLink <i>AI</i></b>
+      </div>
+      <section class="intro">
+        <small>FOR EVERY FARMER</small>
+        <h1 id="tagline">Smart farming. Fair prices. Better lives.</h1>
+        <p id="introText">
+          Every farming decision, made simpler in your language.
+        </p>
+        <div class="crops">🌾 🌽 🍅 🌶️ 🥬</div>
+      </section>
+      <section class="panel">
+        <h2 id="welcome">Welcome to AgriLink AI</h2>
+        <p id="safeText">Login safely using your mobile number</p>
+        <label id="mobileLabel">Mobile number</label>
+        <input placeholder="+91 98765 43210" />
+        <button id="otpBtn" class="primary" onclick="showScreen('setup')">
+          Send OTP
+        </button>
+        <button id="guestBtn" class="link" onclick="showScreen('setup')">
+          Continue as Guest
+        </button>
+        <div class="languages">
+          <button onclick="changeLanguage('en')">English</button>
+          <button onclick="changeLanguage('te')">తెలుగు</button>
+          <button onclick="changeLanguage('hi')">హిందీ</button>
+        </div>
+      </section>
+    </main>
+
+    <!-- SETUP / LOCATION SCREEN -->
+    <main id="setup" class="screen setup hidden">
+      <section class="panel">
+        <button class="back" style="float: left; margin-bottom: 10px;" onclick="showScreen('login')">
+          ← Back
+        </button>
+        <div style="clear: both;"></div>
+        <div class="pin">📍</div>
+        <h2 id="locationTitle">Location & Language</h2>
+        <p id="chooseText">Choose your language. You can change it later.</p>
+        <div class="detected">
+          📍
+          <span>
+            <small id="detectedLabel">DETECTED LOCATION</small>
+            <b id="placeText">Hyderabad, Telangana</b>
+          </span>✓
+        </div>
+        <div class="suggest">
+          🌐
+          <span id="suggestText">We detected Telangana. Continue in Telugu?</span>
+        </div>
+        <button id="yesBtn" class="primary" onclick="continueTelugu()">
+          Yes, continue in Telugu
+        </button>
+        <button id="otherBtn" class="secondary" onclick="showScreen('dashboard')">
+          Choose another language
+        </button>
+        <div class="languages">
+          <button onclick="changeLanguage('en')">English</button>
+          <button onclick="changeLanguage('te')">తెలుగు</button>
+          <button onclick="changeLanguage('hi')">హిందీ</button>
+        </div>
+      </section>
+    </main>
+
+    <!-- DASHBOARD SCREEN -->
+    <main id="dashboard" class="screen hidden">
+      <header>
+        <div style="display: flex; align-items: center; gap: 15px;">
+          <button class="back" onclick="showScreen('setup')">← Back</button>
+          <div class="brand">
+            🌱 <b>AgriLink <i>AI</i></b>
+          </div>
+        </div>
+        <select id="langSelect" onchange="changeLanguage(this.value)">
+          <option value="en">English</option>
+          <option value="te">తెలుగు</option>
+          <option value="hi">హిందీ</option>
+        </select>
+      </header>
+      <section class="hero">
+        <div>
+          <small>☀️ 29°C</small>
+          <h1 id="hello">Namaste🙏</h1>
+          <p id="question">What would you like to do today?</p>
+        </div>
+        <span>🌾🚜</span>
+      </section>
+      <section class="content">
+        <h2 id="servicesTitle">Everything your farm needs</h2>
+        <p id="tapText">Tap any card to get started</p>
+        <div id="serviceGrid" class="grid"></div>
+        <div class="tip">
+          💡
+          <span>
+            <b id="tipTitle">Today's farming tip</b>
+            <p id="tipText">
+              Light rain is expected tomorrow. Complete spraying before 3 PM.
+            </p>
+          </span>
+        </div>
+      </section>
+    </main>
+
+    <!-- SERVICE DETAIL SCREEN -->
+    <main id="service" class="screen hidden">
+      <header>
+        <div style="display: flex; align-items: center; gap: 15px;">
+          <button class="back" onclick="showScreen('dashboard')">← Back</button>
+          <div class="brand">
+            🌱 <b>AgriLink <i>AI</i></b>
+          </div>
+        </div>
+      </header>
+      <section class="content">
+        <button id="backBtn" class="back" onclick="showScreen('dashboard')">
+          ← Back to services
+        </button>
+        <div class="serviceHeading">
+          <span id="serviceIcon"></span>
+          <div>
+            <h1 id="serviceName"></h1>
+            <p id="serviceDescription"></p>
+          </div>
+        </div>
+        <div class="workspace">
+          <form id="serviceForm">
+            <h2 id="enterTitle">Enter your details</h2>
+            <div id="formFields"></div>
+            <button id="resultBtn" class="primary">Show Result</button>
+          </form>
+          <section id="resultBox" class="result">
+            <div class="empty">
+              🌱
+              <h3 id="emptyText">Your result will appear here</h3>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>

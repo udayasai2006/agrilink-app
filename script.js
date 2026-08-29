@@ -1,0 +1,434 @@
+var currentLanguage = "en",
+  activeService = 0;
+var icons = ["🚚", "🛡️", "₹", "🆘", "🗺️", "📅", "🌾", "🤝"];
+
+var names = {
+  en: [
+    "Shared Transport",
+    "Buyer Reliability",
+    "True Profit Calculator",
+    "Rescue My Harvest",
+    "Oversupply Map",
+    "Harvest-Time Advisor",
+    "Crop Details",
+    "Automatic Buyer Matching",
+  ],
+  te: [
+    "రవాణా వాహనాన్ని పంచుకోండి",
+    "కొనుగోలుదారు నమ్మకాన్ని చూడండి",
+    "నిజమైన లాభాన్ని లెక్కించండి",
+    "నా పంటను రక్షించండి",
+    "అధిక పంట సరఫరా మ్యాప్",
+    "ఉత్తమ కోత సమయ సలహా",
+    "పంట వివరాలు",
+    "ఆటోమేటిక్ కొనుగోలుదారు మ్యాచింగ్",
+  ],
+  hi: [
+    "साझा परिवहन",
+    "खरीदार की विश्वसनीयता",
+    "सही लाभ कैलकुलेटर",
+    "मेरी फसल बचाएँ",
+    "अधिक आपूर्ति नक्शा",
+    "सही कटाई समय सलाह",
+    "फसल की जानकारी",
+    "स्वचालित खरीदार मिलान",
+  ],
+};
+
+var descriptions = {
+  en: [
+    "Pool nearby farmers and reduce delivery cost.",
+    "Check payment history, cancellations and reviews.",
+    "Know real profit after every farming cost.",
+    "Find verified buyers after a cancellation.",
+    "Check local crop supply before sowing.",
+    "Use maturity, weather, prices and demand.",
+    "See duration, investment, yield and profit.",
+    "Enter crop details and instantly find suitable verified buyers.",
+  ],
+  te: [
+    "సమీప రైతులతో వాహనం పంచుకొని ఖర్చు తగ్గించండి.",
+    "చెల్లింపు చరిత్ర, రద్దులు మరియు సమీక్షలను చూడండి.",
+    "అన్ని ఖర్చుల తర్వాత అసలు లాభాన్ని తెలుసుకోండి.",
+    "రద్దు అయినప్పుడు కొత్త కొనుగోలుదారులను కనుగొనండి.",
+    "విత్తే ముందు స్థానిక పంట సరఫరాను చూడండి.",
+    "వాతావరణం, ధర మరియు డిమాండ్‌తో కోత సమయం తెలుసుకోండి.",
+    "పంట కాలం, పెట్టుబడి, దిగుబడి మరియు లాభాన్ని తెలుసుకోండి.",
+    "పంట వివరాలు నమోదు చేసి సరైన కొనుగోలుదారులను కనుగొనండి.",
+  ],
+  hi: [
+    "पास के किसानों के साथ वाहन साझा करके खर्च कम करें।",
+    "भुगतान इतिहास, रद्दीकरण और समीक्षाएँ देखें।",
+    "सभी खर्चों के बाद असली लाभ जानें।",
+    "रद्द होने पर सत्यापित नया खरीदार खोजें।",
+    "बुवाई से पहले स्थानीय फसल आपूर्ति देखें।",
+    "मौसम, कीमत और मांग से कटाई समय जानें।",
+    "अवधि, निवेश, उपज और लाभ देखें।",
+    "फसल की जानकारी भरकर सही खरीदार तुरंत खोजें।",
+  ],
+};
+
+var fields = {
+  en: [
+    ["Crop name", "Quantity (kg)", "Pickup village", "Delivery market", "Harvest date"],
+    ["Buyer name", "District"],
+    ["Land size (acres)", "Expected yield", "Selling price", "Total cost"],
+    ["Crop name", "Available quantity", "Minimum price", "Freshness remaining", "Pickup village"],
+    ["Planned crop", "Land size (acres)", "District", "Sowing month"],
+    ["Crop name", "Sowing date", "Crop stage", "Farm location"],
+    ["Crop name", "Land size (acres)", "Season", "Irrigation"],
+    ["Crop name", "Quantity (kg)", "Grade", "Location", "Harvest time"],
+  ],
+  te: [
+    ["పంట పేరు", "పరిమాణం", "పికప్ గ్రామం", "మార్కెట్", "కోత తేదీ"],
+    ["కొనుగోలుదారు పేరు", "జిల్లా"],
+    ["భూమి (ఎకరాలు)", "అంచనా దిగుబడి", "అమ్మకపు ధర", "మొత్తం ఖర్చు"],
+    ["పంట పేరు", "అందుబాటులో ఉన్న పరిమాణం", "కనీస ధర", "తాజాదనం సమయం", "పికప్ గ్రామం"],
+    ["వేయాలనుకున్న పంట", "భూమి (ఎకరాలు)", "జిల్లా", "విత్తే నెల"],
+    ["పంట పేరు", "విత్తిన తేదీ", "పంట దశ", "పొలం ప్రాంతం"],
+    ["పంట పేరు", "భూమి (ఎకరాలు)", "కాలం", "నీటిపారుదల"],
+    ["పంట పేరు", "పరిమాణం (కిలోలు)", "గ్రేడ్", "ప్రాంతం", "కోతకు మిగిలిన సమయం"],
+  ],
+  hi: [
+    ["फसल का नाम", "मात्रा", "उठाने का गाँव", "बिक्री बाजार", "कटाई की तारीख"],
+    ["खरीदार का नाम", "जिला"],
+    ["भूमि (एकड़)", "अनुमानित उपज", "बिक्री मूल्य", "कुल लागत"],
+    ["फसल का नाम", "उपलब्ध मात्रा", "न्यूनतम कीमत", "ताजगी का समय", "उठाने का गाँव"],
+    ["योजनाबद्ध फसल", "भूमि (एकड़)", "जिला", "बुवाई का महीना"],
+    ["फसल का नाम", "बुवाई की तारीख", "फसल की अवस्था", "खेत का स्थान"],
+    ["फसल का नाम", "भूमि (एकड़)", "मौसम", "सिंचाई"],
+    ["फसल का नाम", "मात्रा (किलो)", "ग्रेड", "स्थान", "कटाई में बचा समय"],
+  ],
+};
+
+var resultLabels = {
+  en: [
+    ["Nearby farmers", "Shared cost", "You save"],
+    ["Reliability score", "On-time payments", "Completed deals"],
+    ["Expected revenue", "Total investment", "Net profit"],
+    ["Buyers alerted", "Best offer", "Auction time"],
+    ["Risk level", "Planned area", "Alternative crop"],
+    ["Harvest window", "Maturity", "Buyer demand"],
+    ["Duration", "Investment / acre", "Estimated profit"],
+    ["🥇 Best Match", "🥈 Second Match", "🥉 Third Match"],
+  ],
+  te: [
+    ["సమీప రైతులు", "రవాణా ఖర్చు", "మీ ఆదా"],
+    ["నమ్మకపు స్కోరు", "సమయానికి చెల్లింపులు", "పూర్తయిన లావాదేవీలు"],
+    ["అంచనా ఆదాయం", "మొత్తం పెట్టుబడి", "నికర లాభం"],
+    ["కొనుగోలుదారులు", "ఉత్తమ ధర", "వేలం సమయం"],
+    ["ప్రమాద స్థాయి", "ప్రణాళిక విస్తీర్ణం", "ప్రత్యామ్నాయ పంట"],
+    ["కోత సమయం", "పంట పక్వత", "డిమాండ్"],
+    ["పంట కాలం", "ఎకరానికి పెట్టుబడి", "అంచనా లాభం"],
+    ["🥇 ఉత్తమ సరిపోలిక", "🥈 రెండవ సరిపోలిక", "మూడవ సరిపోలిక"],
+  ],
+  hi: [
+    ["पास के किसान", "परिवहन लागत", "आपकी बचत"],
+    ["विश्वसनीयता स्कोर", "समय पर भुगतान", "पूरे सौदे"],
+    ["अनुमानित आय", "कुल निवेश", "शुद्ध लाभ"],
+    ["खरीदार", "सबसे अच्छा प्रस्ताव", "नीलामी समय"],
+    ["जोखिम स्तर", "योजनाबद्ध क्षेत्र", "वैकल्पिक फसल"],
+    ["कटाई अवधि", "परिपक्वता", "खरीदार मांग"],
+    ["अवधि", "प्रति एकड़ निवेश", "अनुमानित लाभ"],
+    ["🥇 सर्वश्रेष्ठ मिलान", "🥈 दूसरा मिलान", "🥉 तीसरा मिलान"],
+  ],
+};
+
+var results = [
+  ["4 within 8 km", "₹1,750", "₹2,250"],
+  ["92 / 100", "96%", "148"],
+  ["₹86,400", "₹52,000", "₹34,400"],
+  ["12 nearby", "₹2,180 / quintal", "29:45"],
+  ["Moderate", "420 acres", "Green gram"],
+  ["12–14 November", "94%", "High"],
+  ["150–180 days", "₹72,000", "₹94,000 / acre"],
+  ["ABC Foods — 96%", "FreshMart — 91%", "XYZ Processing — 87%"],
+];
+
+var ui = {
+  en: {
+    tag: "Smart farming. Fair prices. Better lives.",
+    intro: "Every farming decision, made simpler in your language.",
+    welcome: "Welcome to AgriLink AI",
+    safe: "Login safely using your mobile number",
+    mobile: "Mobile number",
+    otp: "Send OTP",
+    guest: "Continue as Guest",
+    location: "Location & Language",
+    choose: "Choose your language. You can change it later.",
+    detected: "DETECTED LOCATION",
+    place: "Hyderabad, Telangana",
+    suggest: "We detected Telangana. Continue in Telugu?",
+    yes: "Yes, continue in Telugu",
+    other: "Choose another language",
+    hello: "Namaste🙏",
+    question: "What would you like to do today?",
+    services: "Everything your farm needs",
+    tap: "Tap any card to get started",
+    open: "Open service",
+    tip: "Today’s farming tip",
+    tipText: "Light rain is expected tomorrow. Complete spraying before 3 PM.",
+    back: "Back to services",
+    enter: "Enter your details",
+    show: "Show Result",
+    empty: "Your result will appear here",
+    complete: "Analysis complete",
+    yourResult: "Your Result",
+  },
+  te: {
+    tag: "తెలివైన వ్యవసాయం. సరైన ధర. మెరుగైన జీవితం.",
+    intro: "మీ భాషలో వ్యవసాయ నిర్ణయాలను సులభంగా తీసుకోండి.",
+    welcome: "AgriLink AIకి స్వాగతం",
+    safe: "మీ మొబైల్ నంబర్‌తో సురక్షితంగా లాగిన్ అవ్వండి",
+    mobile: "మొబైల్ నంబర్",
+    otp: "OTP పంపండి",
+    guest: "అతిథిగా కొనసాగండి",
+    location: "స్థానం మరియు భాష",
+    choose: "మీ భాషను ఎంచుకోండి. తర్వాత కూడా మార్చుకోవచ్చు.",
+    detected: "గుర్తించిన స్థానం",
+    place: "హైదరాబాద్, తెలంగాణ",
+    suggest: "తెలుగులో కొనసాగాలనుకుంటున్నారా?",
+    yes: "అవును, తెలుగులో కొనసాగండి",
+    other: "మరొక భాషను ఎంచుకోండి",
+    hello: "నమస్కారం🙏",
+    question: "ఈ రోజు మీరు ఏమి చేయాలనుకుంటున్నారు?",
+    services: "మీ వ్యవసాయానికి కావాల్సిన అన్ని సేవలు",
+    tap: "ప్రారంభించడానికి కార్డును నొక్కండి",
+    open: "సేవను తెరవండి",
+    tip: "నేటి వ్యవసాయ సూచన",
+    tipText: "రేపు తేలికపాటి వర్షం పడవచ్చు. ఈ రోజు 3 గంటలలోపు పిచికారీ పూర్తి చేయండి.",
+    back: "సేవలకు తిరిగి",
+    enter: "మీ వివరాలను నమోదు చేయండి",
+    show: "ఫలితం చూపించు",
+    empty: "మీ ఫలితం ఇక్కడ కనిపిస్తుంది",
+    complete: "విశ్లేషణ పూర్తయింది",
+    yourResult: "మీ ఫలితం",
+  },
+  hi: {
+    tag: "स्मार्ट खेती। सही दाम। बेहतर जीवन।",
+    intro: "खेती के फैसले अपनी भाषा में आसानी से लें।",
+    welcome: "AgriLink AI में आपका स्वागत है",
+    safe: "मोबाइल नंबर से सुरक्षित लॉगिन करें",
+    mobile: "मोबाइल नंबर",
+    otp: "OTP भेजें",
+    guest: "अतिथि के रूप में जारी रखें",
+    location: "स्थान और भाषा",
+    choose: "अपनी भाषा चुनें। बाद में भी बदल सकते हैं।",
+    detected: "पता लगाया गया स्थान",
+    place: "हैदराबाद, तेलंगाना",
+    suggest: "क्या तेलुगु में जारी रखना चाहते हैं?",
+    yes: "हाँ, तेलुगु में जारी रखें",
+    other: "दूसरी भाषा चुनें",
+    hello: "नमस्ते🙏",
+    question: "आज आप क्या करना चाहते हैं?",
+    services: "आपकी खेती के लिए सभी सेवाएँ",
+    tap: "शुरू करने के लिए कार्ड चुनें",
+    open: "सेवा खोलें",
+    tip: "आज की खेती सलाह",
+    tipText: "कल हल्की बारिश हो सकती है। आज 3 बजे से पहले छिड़काव पूरा करें।",
+    back: "सेवाओं पर वापस",
+    enter: "अपनी जानकारी भरें",
+    show: "परिणाम दिखाएँ",
+    empty: "आपका परिणाम यहाँ दिखाई देगा",
+    complete: "विश्लेषण पूरा हुआ",
+    yourResult: "आपका परिणाम",
+  },
+};
+
+function byId(id) {
+  return document.getElementById(id);
+}
+
+function renderScreen(id, serviceIdx) {
+  document.querySelectorAll(".screen").forEach(function (s) {
+    s.classList.add("hidden");
+  });
+  var screen = byId(id);
+  if (screen) screen.classList.remove("hidden");
+  if (id === "dashboard") buildCards();
+  if (id === "service" && typeof serviceIdx !== "undefined") {
+    renderServiceDetails(serviceIdx);
+  }
+}
+
+function showScreen(id, pushHistory = true) {
+  renderScreen(id);
+  if (pushHistory) {
+    history.pushState({ screenId: id }, "", "#" + id);
+  }
+}
+
+window.onpopstate = function (event) {
+  if (event.state && event.state.screenId) {
+    renderScreen(event.state.screenId, event.state.serviceIdx);
+  } else {
+    renderScreen("login");
+  }
+};
+
+function text(id, value) {
+  if (byId(id)) byId(id).textContent = value;
+}
+
+function changeLanguage(language) {
+  currentLanguage = language;
+  var select = byId("langSelect");
+  if (select) select.value = language;
+  var x = ui[language];
+  text("tagline", x.tag);
+  text("introText", x.intro);
+  text("welcome", x.welcome);
+  text("safeText", x.safe);
+  text("mobileLabel", x.mobile);
+  text("otpBtn", x.otp);
+  text("guestBtn", x.guest);
+  text("locationTitle", x.location);
+  text("chooseText", x.choose);
+  text("detectedLabel", x.detected);
+  text("placeText", x.place);
+  text("suggestText", x.suggest);
+  text("yesBtn", x.yes);
+  text("otherBtn", x.other);
+  text("hello", x.hello);
+  text("question", x.question);
+  text("servicesTitle", x.services);
+  text("tapText", x.tap);
+  text("tipTitle", x.tip);
+  text("tipText", x.tipText);
+  text("backBtn", "← " + x.back);
+  text("enterTitle", x.enter);
+  text("resultBtn", x.show);
+  text("emptyText", x.empty);
+  buildCards();
+}
+
+function continueTelugu() {
+  changeLanguage("te");
+  showScreen("dashboard");
+}
+
+function buildCards() {
+  var grid = byId("serviceGrid");
+  if (!grid) return;
+  var html = "";
+  names[currentLanguage].forEach(function (name, i) {
+    html +=
+      '<button class="card" onclick="openService(' +
+      i +
+      ')"><span class="icon">' +
+      icons[i] +
+      "</span><h3>" +
+      name +
+      "</h3><p>" +
+      descriptions[currentLanguage][i] +
+      "</p><b>" +
+      ui[currentLanguage].open +
+      " →</b></button>";
+  });
+  grid.innerHTML = html;
+}
+
+function renderServiceDetails(i) {
+  activeService = i;
+  text("serviceIcon", icons[i]);
+  text("serviceName", names[currentLanguage][i]);
+  text("serviceDescription", descriptions[currentLanguage][i]);
+  var html = "";
+  fields[currentLanguage][i].forEach(function (label, index) {
+    var value = i === 7 ? ["Tomato", "2000", "A", "Ongole", "2 days"][index] : "";
+    html +=
+      "<label>" +
+      label +
+      '<input required id="input_' +
+      index +
+      '" value="' +
+      value +
+      '" placeholder="' +
+      label +
+      '"></label>';
+  });
+  byId("formFields").innerHTML = html;
+  text("enterTitle", ui[currentLanguage].enter);
+  text("resultBtn", ui[currentLanguage].show);
+  byId("resultBox").innerHTML =
+    '<div class="empty">🌱<h3>' + ui[currentLanguage].empty + "</h3></div>";
+}
+
+function openService(i) {
+  renderScreen("service", i);
+  history.pushState({ screenId: "service", serviceIdx: i }, "", "#service-" + i);
+}
+
+byId("serviceForm").addEventListener("submit", async function (e) {
+  e.preventDefault();
+
+  byId("resultBox").innerHTML = '<div class="empty">⏳<h3>Analyzing data...</h3></div>';
+
+  try {
+    let endpoint = activeService === 1 || activeService === 7 
+      ? "/api/buyers" 
+      : "/api/market-prices?crop=" + encodeURIComponent(byId("input_0") ? byId("input_0").value : "Tomato");
+
+    const response = await fetch(endpoint);
+    if (!response.ok) throw new Error("API Route Not Found");
+    const data = await response.json();
+
+    var html =
+      '<div class="analysis"><b class="success">✓ ' +
+      ui[currentLanguage].complete +
+      "</b><h2>" +
+      ui[currentLanguage].yourResult +
+      "</h2>";
+
+    if (activeService === 1 || activeService === 7) {
+      data.forEach(function (buyer, idx) {
+        let badge = idx === 0 ? "🥇 " : idx === 1 ? "🥈 " : "🥉 ";
+        html +=
+          '<div class="row"><span>' +
+          badge +
+          buyer.buyer_name +
+          " (" +
+          buyer.location +
+          ')</span><b>Score: ' +
+          buyer.reliability_score +
+          "% | Rating: " +
+          buyer.payment_rating +
+          "★</b></div>";
+      });
+    } else {
+      data.forEach(function (mkt) {
+        html +=
+          '<div class="row"><span>' +
+          mkt.market +
+          "</span><b>₹" +
+          mkt.price_per_kg +
+          "/kg (Arrival: " +
+          mkt.arrival_quantity +
+          " kg)</b></div>";
+      });
+    }
+
+    html += '<p class="note">Connected directly to Flask backend.</p></div>';
+    byId("resultBox").innerHTML = html;
+  } catch (error) {
+    var html =
+      '<div class="analysis"><b class="success">✓ ' +
+      ui[currentLanguage].complete +
+      "</b><h2>" +
+      ui[currentLanguage].yourResult +
+      "</h2>";
+    resultLabels[currentLanguage][activeService].forEach(function (label, i) {
+      html +=
+        '<div class="row"><span>' +
+        label +
+        "</span><b>" +
+        results[activeService][i] +
+        "</b></div>";
+    });
+    html += '<p class="note">Showing calculated estimates.</p></div>';
+    byId("resultBox").innerHTML = html;
+  }
+});
+
+history.replaceState({ screenId: "login" }, "", "#login");
+changeLanguage("en");
