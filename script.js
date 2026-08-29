@@ -364,10 +364,12 @@ byId("serviceForm").addEventListener("submit", async function (e) {
 
   byId("resultBox").innerHTML = '<div class="empty">⏳<h3>Analyzing data...</h3></div>';
 
+  const BACKEND_URL = "https://agrilink-app-2exr.onrender.com";
+
   try {
     let endpoint = activeService === 1 || activeService === 7 
-      ? "/api/buyers" 
-      : "/api/market-prices?crop=" + encodeURIComponent(byId("input_0") ? byId("input_0").value : "Tomato");
+      ? `${BACKEND_URL}/api/buyers` 
+      : `${BACKEND_URL}/api/market-prices?crop=` + encodeURIComponent(byId("input_0") ? byId("input_0").value : "Tomato");
 
     const response = await fetch(endpoint);
     if (!response.ok) throw new Error("API Route Not Found");
