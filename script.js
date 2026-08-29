@@ -2,7 +2,8 @@ var currentLanguage = "en",
   activeService = 0,
   authMode = "signin",
   currentUser = { name: "Ramesh", district: "Guntur" },
-  historyCount = 11;
+  historyCount = 11,
+  watchId = null;
 
 var icons = ["🚚", "🛡️", "₹", "🆘", "🗺️", "📅", "🌾", "🤝"];
 
@@ -123,7 +124,7 @@ var resultLabels = {
     ["ప్రమాద స్థాయి", "ప్రణాళిక విస్తీర్ణం", "ప్రత్యామ్నాయ పంట"],
     ["కోత సమయం", "పంట పక్వత", "డిమాండ్"],
     ["పంట కాలం", "ఎకరానికి పెట్టుబడి", "అంచనా లాభం"],
-    ["🥇 ఉత్తమ సరిపోలిక", "🥈 రెండవ సరిపోలిక", "🥉 మూడవ సరిపోలిక"],
+    ["🥇 ఉత్తమ సరిపోలిక", "🥈 రెండవ సరిపోలిక", "మూడవ సరిపోలిక"],
   ],
   hi: [
     ["पास के किसान", "परिवहन लागत", "आपकी बचत"],
@@ -273,7 +274,7 @@ function text(id, val) {
   if (byId(id)) byId(id).textContent = val;
 }
 
-// Dynamically detects the exact real-time GPS location of the user
+// Dynamically tracks real-time GPS location continuously using watchPosition
 function detectExactLocation() {
   var placeTextEl = byId("placeText");
   var suggestTextEl = byId("suggestText");
@@ -283,9 +284,14 @@ function detectExactLocation() {
     return;
   }
 
-  if (placeTextEl) placeTextEl.textContent = "Detecting your location...";
+  if (placeTextEl) placeTextEl.textContent = "Detecting live location...";
 
-  navigator.geolocation.getCurrentPosition(
+  // Clear existing watch if active
+  if (watchId !== null) {
+    navigator.geolocation.clearWatch(watchId);
+  }
+
+  watchId = navigator.geolocation.watchPosition(
     async function (position) {
       var lat = position.coords.latitude;
       var lon = position.coords.longitude;
@@ -313,18 +319,26 @@ function detectExactLocation() {
           suggestTextEl.textContent = `We detected ${state}. Continue in Telugu?`;
         }
       } catch (err) {
-        console.error("Error fetching location details:", err);
-        if (placeTextEl) placeTextEl.textContent = "Surampalem, Andhra Pradesh";
+        console.error("Error fetching live location details:", err);
+        if (placeTextEl && placeTextEl.textContent.includes("Detecting")) {
+          placeTextEl.textContent = "Surampalem, Andhra Pradesh";
+        }
       }
     },
     function (error) {
-      console.warn("User denied location access or error occurred:", error.message);
-      if (placeTextEl) placeTextEl.textContent = "Surampalem, Andhra Pradesh";
+      console.warn("Location tracking error or permission denied:", error.message);
+      if (placeTextEl && placeTextEl.textContent.includes("Detecting")) {
+        placeTextEl.textContent = "Surampalem, Andhra Pradesh";
+      }
       if (suggestTextEl) {
         suggestTextEl.textContent = "We detected Andhra Pradesh. Continue in Telugu?";
       }
     },
-    { enableHighAccuracy: true, timeout: 10000 }
+    {
+      enableHighAccuracy: true,
+      maximumAge: 5000,
+      timeout: 10000,
+    }
   );
 }
 
