@@ -273,6 +273,61 @@ function text(id, val) {
   if (byId(id)) byId(id).textContent = val;
 }
 
+// Dynamically detects the exact real-time GPS location of the user
+function detectExactLocation() {
+  var placeTextEl = byId("placeText");
+  var suggestTextEl = byId("suggestText");
+
+  if (!navigator.geolocation) {
+    console.warn("Geolocation is not supported by this browser.");
+    return;
+  }
+
+  if (placeTextEl) placeTextEl.textContent = "Detecting your location...";
+
+  navigator.geolocation.getCurrentPosition(
+    async function (position) {
+      var lat = position.coords.latitude;
+      var lon = position.coords.longitude;
+
+      try {
+        var response = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`
+        );
+        var data = await response.json();
+
+        var address = data.address || {};
+        var cityOrTown =
+          address.village ||
+          address.town ||
+          address.suburb ||
+          address.city ||
+          address.county ||
+          "Surampalem";
+        var state = address.state || "Andhra Pradesh";
+
+        var detectedString = `${cityOrTown}, ${state}`;
+
+        if (placeTextEl) placeTextEl.textContent = detectedString;
+        if (suggestTextEl) {
+          suggestTextEl.textContent = `We detected ${state}. Continue in Telugu?`;
+        }
+      } catch (err) {
+        console.error("Error fetching location details:", err);
+        if (placeTextEl) placeTextEl.textContent = "Surampalem, Andhra Pradesh";
+      }
+    },
+    function (error) {
+      console.warn("User denied location access or error occurred:", error.message);
+      if (placeTextEl) placeTextEl.textContent = "Surampalem, Andhra Pradesh";
+      if (suggestTextEl) {
+        suggestTextEl.textContent = "We detected Andhra Pradesh. Continue in Telugu?";
+      }
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
+
 function renderAuthForm() {
   var container = byId("authFields");
   var u = ui[currentLanguage];
@@ -336,6 +391,10 @@ function renderScreen(id, serviceIdx) {
   var screen = byId(id);
   if (screen) screen.classList.remove("hidden");
 
+  if (id === "setup") {
+    detectExactLocation();
+  }
+
   if (id === "dashboard") {
     updateHeroGreeting();
     buildCards();
@@ -379,7 +438,12 @@ function changeLanguage(language) {
   text("locationTitle", x.location);
   text("chooseText", x.choose);
   text("detectedLabel", x.detected);
-  text("placeText", x.place);
+  
+  // Keep fallback text until dynamic location overrides it
+  if (!byId("placeText").textContent.includes(",")) {
+    text("placeText", x.place);
+  }
+  
   text("suggestText", x.suggest);
   text("yesBtn", x.yes);
   text("otherBtn", x.other);
