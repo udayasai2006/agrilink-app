@@ -105,50 +105,6 @@ var fields = {
   ],
 };
 
-var resultLabels = {
-  en: [
-    ["Nearby farmers", "Shared cost", "You save"],
-    ["Reliability score", "On-time payments", "Completed deals"],
-    ["Expected revenue", "Total investment", "Net profit"],
-    ["Buyers alerted", "Best offer", "Auction time"],
-    ["Risk level", "Planned area", "Alternative crop"],
-    ["Harvest window", "Maturity", "Buyer demand"],
-    ["Duration", "Investment / acre", "Estimated profit"],
-    ["🥇 Best Match", "🥈 Second Match", "🥉 Third Match"],
-  ],
-  te: [
-    ["సమీప రైతులు", "రవాణా ఖర్చు", "మీ ఆదా"],
-    ["నమ్మకపు స్కోరు", "సమయానికి చెల్లింపులు", "పూర్తయిన లావాదేవీలు"],
-    ["అంచనా ఆదాయం", "మొత్తం పెట్టుబడి", "నికర లాభం"],
-    ["కొనుగోలుదారులు", "ఉత్తమ ధర", "వేలం సమయం"],
-    ["ప్రమాద స్థాయి", "ప్రణాళిక విస్తీర్ణం", "ప్రత్యామ్నాయ పంట"],
-    ["కోత సమయం", "పంట పక్వత", "డిమాండ్"],
-    ["పంట కాలం", "ఎకరానికి పెట్టుబడి", "అంచనా లాభం"],
-    ["🥇 ఉత్తమ సరిపోలిక", "🥈 రెండవ సరిపోలిక", "మూడవ సరిపోలిక"],
-  ],
-  hi: [
-    ["पास के किसान", "परिवहन लागत", "आपकी बचत"],
-    ["विश्वसनीयता स्कोर", "समय पर भुगतान", "पूरे सौदे"],
-    ["अनुमानित आय", "कुल निवेश", "शुद्ध लाभ"],
-    ["खरीदार", "सबसे अच्छा प्रस्ताव", "नीलामी समय"],
-    ["जोखिम स्तर", "योजनाबद्ध क्षेत्र", "वैकल्पिक फसल"],
-    ["कटाई अवधि", "परिपक्वता", "खरीदार मांग"],
-    ["अवधि", "प्रति एकड़ निवेश", "अनुमानित लाभ"],
-    ["🥇 सर्वश्रेष्ठ मिलान", "🥈 दूसरा मिलान", "🥉 तीसरा मिलान"],
-  ],
-};
-
-var results = [
-  ["4 within 8 km", "₹1,750", "₹2,250"],
-  ["92 / 100", "96%", "148"],
-  ["₹86,400", "₹52,000", "₹34,400"],
-  ["12 nearby", "₹2,180 / quintal", "29:45"],
-  ["Moderate", "420 acres", "Green gram"],
-  ["12–14 November", "94%", "High"],
-  ["150–180 days", "₹72,000", "₹94,000 / acre"],
-  ["ABC Foods — 96%", "FreshMart — 91%", "XYZ Processing — 87%"],
-];
-
 var ui = {
   en: {
     tag: "Smart farming. Fair prices. Better lives.",
@@ -274,19 +230,14 @@ function text(id, val) {
   if (byId(id)) byId(id).textContent = val;
 }
 
-// Dynamically tracks real-time GPS location continuously using watchPosition
 function detectExactLocation() {
   var placeTextEl = byId("placeText");
   var suggestTextEl = byId("suggestText");
 
-  if (!navigator.geolocation) {
-    console.warn("Geolocation is not supported by this browser.");
-    return;
-  }
+  if (!navigator.geolocation) return;
 
   if (placeTextEl) placeTextEl.textContent = "Detecting live location...";
 
-  // Clear existing watch if active
   if (watchId !== null) {
     navigator.geolocation.clearWatch(watchId);
   }
@@ -319,26 +270,17 @@ function detectExactLocation() {
           suggestTextEl.textContent = `We detected ${state}. Continue in Telugu?`;
         }
       } catch (err) {
-        console.error("Error fetching live location details:", err);
         if (placeTextEl && placeTextEl.textContent.includes("Detecting")) {
           placeTextEl.textContent = "Surampalem, Andhra Pradesh";
         }
       }
     },
     function (error) {
-      console.warn("Location tracking error or permission denied:", error.message);
       if (placeTextEl && placeTextEl.textContent.includes("Detecting")) {
         placeTextEl.textContent = "Surampalem, Andhra Pradesh";
       }
-      if (suggestTextEl) {
-        suggestTextEl.textContent = "We detected Andhra Pradesh. Continue in Telugu?";
-      }
     },
-    {
-      enableHighAccuracy: true,
-      maximumAge: 5000,
-      timeout: 10000,
-    }
+    { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
   );
 }
 
@@ -405,9 +347,7 @@ function renderScreen(id, serviceIdx) {
   var screen = byId(id);
   if (screen) screen.classList.remove("hidden");
 
-  if (id === "setup") {
-    detectExactLocation();
-  }
+  if (id === "setup") detectExactLocation();
 
   if (id === "dashboard") {
     updateHeroGreeting();
@@ -453,7 +393,6 @@ function changeLanguage(language) {
   text("chooseText", x.choose);
   text("detectedLabel", x.detected);
   
-  // Keep fallback text until dynamic location overrides it
   if (!byId("placeText").textContent.includes(",")) {
     text("placeText", x.place);
   }
@@ -514,14 +453,14 @@ function renderServiceDetails(i) {
   text("serviceDescription", descriptions[currentLanguage][i]);
   var html = "";
   fields[currentLanguage][i].forEach(function (label, index) {
-    var value = i === 7 ? ["Tomato", "2000", "A", currentUser.district || "Ongole", "2 days"][index] : "";
+    var val = i === 7 ? ["Tomato", "2000", "A", currentUser.district || "Ongole", "2 days"][index] : "";
     html +=
       "<label>" +
       label +
       '<input required id="input_' +
       index +
       '" value="' +
-      value +
+      val +
       '" placeholder="' +
       label +
       '"></label>';
@@ -538,21 +477,99 @@ function openService(i) {
   history.pushState({ screenId: "service", serviceIdx: i }, "", "#service-" + i);
 }
 
+// Service form submission handler
 byId("serviceForm").addEventListener("submit", async function (e) {
   e.preventDefault();
 
   byId("resultBox").innerHTML = '<div class="empty">⏳<h3>Analyzing data...</h3></div>';
 
   const BACKEND_URL = "https://agrilink-app-2exr.onrender.com";
+  historyCount++;
+
+  function getVal(idx) {
+    var el = byId("input_" + idx);
+    return el ? el.value : "";
+  }
 
   try {
-    let endpoint = activeService === 1 || activeService === 7 
-      ? `${BACKEND_URL}/api/buyers` 
-      : `${BACKEND_URL}/api/market-prices?crop=` + encodeURIComponent(byId("input_0") ? byId("input_0").value : "Tomato");
+    let response, data;
 
-    const response = await fetch(endpoint);
-    if (!response.ok) throw new Error("API Route Not Found");
-    const data = await response.json();
+    switch (activeService) {
+      case 0: // Shared Transport
+        response = await fetch(`${BACKEND_URL}/api/shared-transport`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            crop: getVal(0),
+            quantity: getVal(1),
+            pickup_village: getVal(2),
+          }),
+        });
+        break;
+
+      case 1: // Buyer Reliability
+      case 7: // Automatic Buyer Matching
+        response = await fetch(
+          `${BACKEND_URL}/api/buyers?buyer=${encodeURIComponent(getVal(0))}&district=${encodeURIComponent(getVal(1) || getVal(3))}`
+        );
+        break;
+
+      case 2: // True Profit Calculator
+        response = await fetch(`${BACKEND_URL}/api/profit-calculator`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            acres: getVal(0),
+            expected_yield: getVal(1),
+            selling_price: getVal(2),
+            total_cost: getVal(3),
+          }),
+        });
+        break;
+
+      case 3: // Rescue My Harvest
+        response = await fetch(`${BACKEND_URL}/api/rescue-harvest`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            crop: getVal(0),
+            quantity: getVal(1),
+            min_price: getVal(2),
+          }),
+        });
+        break;
+
+      case 4: // Oversupply Map
+        response = await fetch(`${BACKEND_URL}/api/oversupply-map`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            crop: getVal(0),
+            district: getVal(2),
+          }),
+        });
+        break;
+
+      case 5: // Harvest-Time Advisor
+        response = await fetch(`${BACKEND_URL}/api/harvest-advisor`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sowing_date: getVal(1),
+            stage: getVal(2),
+          }),
+        });
+        break;
+
+      case 6: // Crop Details
+        response = await fetch(
+          `${BACKEND_URL}/api/market-prices?crop=${encodeURIComponent(getVal(0) || "Tomato")}`
+        );
+        break;
+    }
+
+    if (!response || !response.ok) throw new Error("API call failed");
+    data = await response.json();
 
     var html =
       '<div class="analysis"><b class="success">✓ ' +
@@ -561,53 +578,50 @@ byId("serviceForm").addEventListener("submit", async function (e) {
       ui[currentLanguage].yourResult +
       "</h2>";
 
-    if (activeService === 1 || activeService === 7) {
-      data.forEach(function (buyer, idx) {
-        let badge = idx === 0 ? "🥇 " : idx === 1 ? "🥈 " : "🥉 ";
+    if (Array.isArray(data)) {
+      if (activeService === 1 || activeService === 7) {
+        data.forEach(function (buyer, idx) {
+          let badge = idx === 0 ? "🥇 " : idx === 1 ? "🥈 " : "🥉 ";
+          html +=
+            '<div class="row"><span>' +
+            badge +
+            (buyer.buyer_name || buyer.name) +
+            " (" +
+            buyer.location +
+            ')</span><b>Score: ' +
+            buyer.reliability_score +
+            "% | Rating: " +
+            buyer.payment_rating +
+            "★</b></div>";
+        });
+      } else {
+        data.forEach(function (mkt) {
+          html +=
+            '<div class="row"><span>' +
+            mkt.market +
+            "</span><b>₹" +
+            mkt.price_per_kg +
+            "/kg (Arrival: " +
+            mkt.arrival_quantity +
+            " kg)</b></div>";
+        });
+      }
+    } else if (data.data) {
+      data.data.forEach(function (row) {
         html +=
           '<div class="row"><span>' +
-          badge +
-          buyer.buyer_name +
-          " (" +
-          buyer.location +
-          ')</span><b>Score: ' +
-          buyer.reliability_score +
-          "% | Rating: " +
-          buyer.payment_rating +
-          "★</b></div>";
-      });
-    } else {
-      data.forEach(function (mkt) {
-        html +=
-          '<div class="row"><span>' +
-          mkt.market +
-          "</span><b>₹" +
-          mkt.price_per_kg +
-          "/kg (Arrival: " +
-          mkt.arrival_quantity +
-          " kg)</b></div>";
+          row.label +
+          "</span><b>" +
+          row.value +
+          "</b></div>";
       });
     }
 
     html += '<p class="note">' + ui[currentLanguage].dbTag + historyCount + '</p></div>';
     byId("resultBox").innerHTML = html;
-  } catch (error) {
-    var html =
-      '<div class="analysis"><b class="success">✓ ' +
-      ui[currentLanguage].complete +
-      "</b><h2>" +
-      ui[currentLanguage].yourResult +
-      "</h2>";
-    resultLabels[currentLanguage][activeService].forEach(function (label, i) {
-      html +=
-        '<div class="row"><span>' +
-        label +
-        "</span><b>" +
-        results[activeService][i] +
-        "</b></div>";
-    });
-    html += '<p class="note">' + ui[currentLanguage].dbTag + historyCount + '</p></div>';
-    byId("resultBox").innerHTML = html;
+  } catch (err) {
+    byId("resultBox").innerHTML =
+      '<div class="analysis"><b class="error">❌ Unable to fetch live feature analysis. Please check network.</b></div>';
   }
 });
 
