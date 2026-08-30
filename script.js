@@ -5,6 +5,9 @@ var currentLanguage = "en",
   historyCount = 11,
   watchId = null;
 
+// Live Render Backend Base URL
+const BACKEND_URL = "https://agrilink-app-1.onrender.com";
+
 var icons = ["🚚", "🛡️", "₹", "🆘", "🗺️", "📅", "🌾", "🤝"];
 
 var names = {
@@ -483,7 +486,6 @@ byId("serviceForm").addEventListener("submit", async function (e) {
 
   byId("resultBox").innerHTML = '<div class="empty">⏳<h3>Analyzing data...</h3></div>';
 
-  const BACKEND_URL = "https://agrilink-app-2exr.onrender.com";
   historyCount++;
 
   function getVal(idx) {
@@ -561,7 +563,7 @@ byId("serviceForm").addEventListener("submit", async function (e) {
         });
         break;
 
-      case 6: // Crop Details
+      case 6: // Crop Details / Market Prices
         response = await fetch(
           `${BACKEND_URL}/api/market-prices?crop=${encodeURIComponent(getVal(0) || "Tomato")}`
         );
@@ -620,8 +622,9 @@ byId("serviceForm").addEventListener("submit", async function (e) {
     html += '<p class="note">' + ui[currentLanguage].dbTag + historyCount + '</p></div>';
     byId("resultBox").innerHTML = html;
   } catch (err) {
+    console.error("Fetch error:", err);
     byId("resultBox").innerHTML =
-      '<div class="analysis"><b class="error">❌ Unable to fetch live feature analysis. Please check network.</b></div>';
+      '<div class="analysis"><b class="error">❌ Unable to fetch live feature analysis. Please verify backend connection.</b></div>';
   }
 });
 
