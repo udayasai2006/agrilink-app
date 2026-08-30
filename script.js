@@ -80,7 +80,7 @@ var fields = {
   en: [
     ["Crop name", "Quantity (kg)", "Pickup village", "Delivery market", "Harvest date"],
     ["Buyer name", "District"],
-    ["Land size (acres)", "Expected yield", "Selling price", "Total cost"],
+    ["Land size (acres)", "Expected yield (in per 100 kgs)", "Selling price", "Total investment"],
     ["Crop name", "Available quantity", "Minimum price", "Freshness remaining", "Pickup village"],
     ["Planned crop", "Land size (acres)", "District", "Sowing month"],
     ["Crop name", "Sowing date", "Crop stage", "Farm location"],
@@ -90,7 +90,7 @@ var fields = {
   te: [
     ["పంట పేరు", "పరిమాణం", "పికప్ గ్రామం", "మార్కెట్", "కోత తేదీ"],
     ["కొనుగోలుదారు పేరు", "జిల్లా"],
-    ["భూమి (ఎకరాలు)", "అంచనా దిగుబడి", "అమ్మకపు ధర", "మొత్తం ఖర్చు"],
+    ["భూమి (ఎకరాలు)", "అంచనా దిగుబడి (ప్రతి 100 కిలోలలో)", "అమ్మకపు ధర", "మొత్తం పెట్టుబడి"],
     ["పంట పేరు", "అందుబాటులో ఉన్న పరిమాణం", "కనీస ధర", "తాజాదనం సమయం", "పికప్ గ్రామం"],
     ["వేయాలనుకున్న పంట", "భూమి (ఎకరాలు)", "జిల్లా", "విత్తే నెల"],
     ["పంట పేరు", "విత్తిన తేదీ", "పంట దశ", "పొలం ప్రాంతం"],
@@ -100,7 +100,7 @@ var fields = {
   hi: [
     ["फसल का नाम", "मात्रा", "उठाने का गाँव", "बिक्री बाजार", "कटाई की तारीख"],
     ["खरीदार का नाम", "जिला"],
-    ["भूमि (एकड़)", "अनुमानित उपज", "बिक्री मूल्य", "कुल लागत"],
+    ["भूमि (एकड़)", "अनुमानित उपज (प्रति 100 किग्रा में)", "बिक्री मूल्य", "कुल निवेश"],
     ["फसल का नाम", "उपलब्ध मात्रा", "न्यूनतम कीमत", "ताजगी का समय", "उठाने का गाँव"],
     ["योजनाबद्ध फसल", "भूमि (एकड़)", "जिला", "बुवाई का महीना"],
     ["फसल का नाम", "बुवाई की तारीख", "फसल की अवस्था", "खेत का स्थान"],
@@ -128,8 +128,8 @@ var ui = {
     location: "Location & Language",
     choose: "Choose your language. You can change it later.",
     detected: "DETECTED LOCATION",
-    place: "Hyderabad, Telangana",
-    suggest: "We detected Telangana. Continue in Telugu?",
+    place: "Detecting location...",
+    suggest: "We detected your location. Continue in Telugu?",
     yes: "Yes, continue in Telugu",
     other: "Choose another language",
     hello: "Namaste, ",
@@ -166,8 +166,8 @@ var ui = {
     location: "స్థానం మరియు భాష",
     choose: "మీ భాషను ఎంచుకోండి. తర్వాత కూడా మార్చుకోవచ్చు.",
     detected: "గుర్తించిన స్థానం",
-    place: "హైదరాబాద్, తెలంగాణ",
-    suggest: "తెలుగులో కొనసాగాలనుకుంటున్నారా?",
+    place: "స్థానాన్ని గుర్తిస్తోంది...",
+    suggest: "మీ స్థానాన్ని గుర్తించాము. తెలుగులో కొనసాగాలనుకుంటున్నారా?",
     yes: "అవును, తెలుగులో కొనసాగండి",
     other: "మరొక భాషను ఎంచుకోండి",
     hello: "నమస్కారం, ",
@@ -204,8 +204,8 @@ var ui = {
     location: "स्थान और भाषा",
     choose: "अपनी भाषा चुनें। बाद में भी बदल सकते हैं।",
     detected: "पता लगाया गया स्थान",
-    place: "हैदराबाद, तेलंगाना",
-    suggest: "क्या तेलुगु में जारी रखना चाहते हैं?",
+    place: "स्थान का पता लगाया जा रहा है...",
+    suggest: "हमने आपके स्थान का पता लगाया है। क्या तेलुगु में जारी रखना चाहते हैं?",
     yes: "हाँ, तेलुगु में जारी रखें",
     other: "दूसरी भाषा चुनें",
     hello: "नमस्ते, ",
@@ -237,9 +237,12 @@ function detectExactLocation() {
   var placeTextEl = byId("placeText");
   var suggestTextEl = byId("suggestText");
 
-  if (!navigator.geolocation) return;
+  if (!navigator.geolocation) {
+    if (placeTextEl) placeTextEl.textContent = "Location unavailable";
+    return;
+  }
 
-  if (placeTextEl) placeTextEl.textContent = "Detecting live location...";
+  if (placeTextEl) placeTextEl.textContent = "Detecting exact live location...";
 
   if (watchId !== null) {
     navigator.geolocation.clearWatch(watchId);
@@ -255,35 +258,53 @@ function detectExactLocation() {
           `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`
         );
         var data = await response.json();
-
         var address = data.address || {};
-        var cityOrTown =
+
+        var localPlace =
           address.village ||
           address.town ||
           address.suburb ||
           address.city ||
+          address.neighbourhood ||
+          "";
+
+        var districtOrCounty =
+          address.state_district ||
           address.county ||
-          "Surampalem";
-        var state = address.state || "Andhra Pradesh";
+          address.city ||
+          "";
 
-        var detectedString = `${cityOrTown}, ${state}`;
+        var state = address.state || "";
 
-        if (placeTextEl) placeTextEl.textContent = detectedString;
+        var exactLocationString = [localPlace, districtOrCounty, state]
+          .filter(Boolean)
+          .filter((val, idx, self) => self.indexOf(val) === idx)
+          .join(", ");
+
+        if (!exactLocationString) {
+          exactLocationString = `${lat.toFixed(4)}°, ${lon.toFixed(4)}°`;
+        }
+
+        if (placeTextEl) placeTextEl.textContent = exactLocationString;
         if (suggestTextEl) {
-          suggestTextEl.textContent = `We detected ${state}. Continue in Telugu?`;
+          suggestTextEl.textContent = `We detected ${state || exactLocationString}. Continue in your local language?`;
+        }
+
+        if (districtOrCounty || localPlace) {
+          currentUser.district = districtOrCounty || localPlace;
         }
       } catch (err) {
         if (placeTextEl && placeTextEl.textContent.includes("Detecting")) {
-          placeTextEl.textContent = "Surampalem, Andhra Pradesh";
+          placeTextEl.textContent = `${lat.toFixed(4)}°, ${lon.toFixed(4)}°`;
         }
       }
     },
     function (error) {
-      if (placeTextEl && placeTextEl.textContent.includes("Detecting")) {
-        placeTextEl.textContent = "Surampalem, Andhra Pradesh";
+      if (placeTextEl) {
+        placeTextEl.textContent = "Location access denied";
       }
     },
-    { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+    { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
   );
 }
 
