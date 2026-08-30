@@ -6,16 +6,19 @@ import mysql.connector
 app = Flask(__name__, static_folder='.', static_url_path='')
 CORS(app)
 
-db_config = {
-    'host': os.environ.get('DB_HOST', 'localhost'),
-    'user': os.environ.get('DB_USER', 'root'),
-    'password': os.environ.get('DB_PASSWORD', '664262'),
-    'database': os.environ.get('DB_NAME', 'agrilink'),
-    'port': int(os.environ.get('DB_PORT', 3306))
-}
-
 def get_db_connection():
-    return mysql.connector.connect(**db_config)
+    # Retrieve port with safety fallback
+    port_env = os.environ.get('DB_PORT', '23619')
+    port = int(port_env) if port_env and port_env.isdigit() else 23619
+
+    return mysql.connector.connect(
+        host=os.environ.get('DB_HOST', 'localhost'),
+        user=os.environ.get('DB_USER', 'root'),
+        password=os.environ.get('DB_PASSWORD', ''),
+        database=os.environ.get('DB_NAME', 'defaultdb'),
+        port=port,
+        ssl_disabled=False  # Required for Aiven MySQL SSL enforcement
+    )
 
 @app.route('/')
 def serve_index():
@@ -23,7 +26,7 @@ def serve_index():
 
 @app.route('/health')
 def health():
-    return jsonify({"message": "AgriLink AI Backend is running!"})
+    return jsonify({"status": "healthy", "message": "AgriLink AI Backend is running!"})
 
 # Feature 0: Shared Transport
 @app.route('/api/shared-transport', methods=['POST'])
@@ -66,8 +69,8 @@ def get_buyers():
         conn.close()
         if buyers:
             return jsonify(buyers)
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"Database error in /api/buyers: {e}")
 
     return jsonify([
         {"buyer_name": "ABC Foods Ltd", "location": district or "Hyderabad", "reliability_score": 96, "payment_rating": 4.8},
@@ -84,7 +87,7 @@ def profit_calculator():
     price = float(data.get('selling_price', 30) or 30)
     cost = float(data.get('total_cost', 25000) or 25000)
 
-    revenue = round(yield_qty * price * 100)  # quintal/kg calculation scaling
+    revenue = round(yield_qty * price * 100)
     net_profit = revenue - cost
 
     return jsonify({
@@ -141,7 +144,7 @@ def harvest_advisor():
         ]
     })
 
-# Feature 6: Crop Details
+# Feature 6: Market Prices
 @app.route('/api/market-prices', methods=['GET'])
 def get_market_prices():
     crop = request.args.get('crop', 'Tomato')
@@ -155,8 +158,8 @@ def get_market_prices():
         conn.close()
         if prices:
             return jsonify(prices)
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"Database error in /api/market-prices: {e}")
 
     return jsonify([
         {"market": f"{crop} Primary Market", "price_per_kg": 42, "arrival_quantity": 12000},
