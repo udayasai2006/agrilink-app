@@ -472,3 +472,15 @@ header select {
     font-size: 17px;
   }
 }
+
+/* --- NETLIFY DRAWER / WATERMARK OVERLAY REMOVAL --- */
+#netlify-modal-root,
+.netlify-feedback-drawer,
+[data-netlify-deploy-id],
+iframe[src*="netlify"],
+div[class*="netlify"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
