@@ -80,7 +80,7 @@ var fields = {
   en: [
     ["Crop name", "Quantity (kg)", "Pickup village", "Delivery market", "Harvest date"],
     ["Buyer name", "District"],
-    ["Land size (acres)", "Expected yield (in kgs)", "Selling price", "Total investment"],
+    ["Land size (acres)", "Expected yield (in kgs)", "Selling price", "Total cost"],
     ["Crop name", "Available quantity", "Minimum price", "Freshness remaining", "Pickup village"],
     ["Planned crop", "Land size (acres)", "District", "Sowing month"],
     ["Crop name", "Sowing date", "Crop stage", "Farm location"],
@@ -90,7 +90,7 @@ var fields = {
   te: [
     ["పంట పేరు", "పరిమాణం", "పికప్ గ్రామం", "మార్కెట్", "కోత తేదీ"],
     ["కొనుగోలుదారు పేరు", "జిల్లా"],
-    ["భూమి (ఎకరాలు)", "అంచనా దిగుబడి (కిలోలలో)", "అమ్మకపు ధర", "మొత్తం పెట్టుబడి"],
+    ["భూమి (ఎకరాలు)", "అంచనా దిగుబడి (కిలోలలో)", "అమ్మకపు ధర", "మొత్తం ఖర్చు"],
     ["పంట పేరు", "అందుబాటులో ఉన్న పరిమాణం", "కనీస ధర", "తాజాదనం సమయం", "పికప్ గ్రామం"],
     ["వేయాలనుకున్న పంట", "భూమి (ఎకరాలు)", "జిల్లా", "విత్తే నెల"],
     ["పంట పేరు", "విత్తిన తేదీ", "పంట దశ", "పొలం ప్రాంతం"],
@@ -100,7 +100,7 @@ var fields = {
   hi: [
     ["फसल का नाम", "मात्रा", "उठाने का गाँव", "बिक्री बाजार", "कटाई की तारीख"],
     ["खरीदार का नाम", "जिला"],
-    ["भूमि (एकड़)", "अनुमानित उपज (किलो में)", "बिक्री मूल्य", "कुल निवेश"],
+    ["भूमि (एकड़)", "अनुमानित उपज (किग्रा में)", "बिक्री मूल्य", "कुल लागत"],
     ["फसल का नाम", "उपलब्ध मात्रा", "न्यूनतम कीमत", "ताजगी का समय", "उठाने का गाँव"],
     ["योजनाबद्ध फसल", "भूमि (एकड़)", "जिला", "बुवाई का महीना"],
     ["फसल का नाम", "बुवाई की तारीख", "फसल की अवस्था", "खेत का स्थान"],
@@ -543,10 +543,9 @@ byId("serviceForm").addEventListener("submit", async function (e) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             acres: getVal(0),
-            // Convert user's kg input back to quintals so backend revenue calculations remain accurate
-            expected_yield: (parseFloat(getVal(1)) / 100).toString(),
+            expected_yield: getVal(1), // Sent directly in kgs
             selling_price: getVal(2),
-            total_cost: getVal(3),
+            total_cost: getVal(3),     // Total cost input
           }),
         });
         break;
