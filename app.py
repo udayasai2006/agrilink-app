@@ -83,17 +83,17 @@ def get_buyers():
 def profit_calculator():
     data = request.json or {}
     acres = float(data.get('acres', 1) or 1)
-    yield_qty = float(data.get('expected_yield', 20) or 20)
-    price = float(data.get('selling_price', 30) or 30)
-    cost = float(data.get('total_cost', 25000) or 25000)
+    yield_qty = float(data.get('expected_yield', 2000) or 2000)  # Input in kgs
+    price = float(data.get('selling_price', 30) or 30)           # Price per kg
+    cost = float(data.get('total_cost', 25000) or 25000)          # Total Cost
 
-    revenue = round(yield_qty * price * 100)
+    revenue = round(yield_qty * price)                           # Revenue directly in kgs
     net_profit = revenue - cost
 
     return jsonify({
         "data": [
             {"label": "Expected Revenue", "value": f"₹{revenue:,}"},
-            {"label": "Total Investment", "value": f"₹{cost:,.0f}"},
+            {"label": "Total Cost", "value": f"₹{cost:,.0f}"},
             {"label": "Net Profit", "value": f"₹{net_profit:,}"}
         ]
     })
